@@ -1,12 +1,10 @@
-name: Deploy EKS
+name: Destroy Infrastructure
 
 on:
-  push:
-    branches:
-      - main
+  workflow_dispatch:
 
 jobs:
-  deploy:
+  destroy:
     runs-on: ubuntu-latest
 
     steps:
@@ -24,12 +22,20 @@ jobs:
         chmod +x terragrunt_linux_amd64
         sudo mv terragrunt_linux_amd64 /usr/local/bin/terragrunt
 
-    - name: Terraform Init and Apply
+    - name: Terraform Init and Destroy for VPC
       run: |
-        cd live/dev
+        cd live/vpc
         terragrunt init
-        terragrunt apply -auto-approve
+        terragrunt destroy -auto-approve
       env:
         AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
         AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        AWS_REGION: us-west-2
+
+    - name: Terraform Init and Destroy for EKS
+      run: |
+        cd ../dev
+        terragrunt init
+        terragrunt destroy -auto-approve
+      env:
+        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
