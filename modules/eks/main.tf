@@ -2,39 +2,25 @@ provider "aws" {
   region = var.region
 }
 
-resource "aws_eks_cluster" "eks_cluster" {
+module "vpc" {
+  source = "../vpc"
+  region = var.region
+  cidr_block = var.vpc_cidr_block
+  public_subnet_cidrs = var.public_subnet_cidrs
+  availability_zones  = var.availability_zones
+}
+
+resource "aws_eks_cluster" "this" {
   name     = var.cluster_name
-  role_arn = aws_iam_role.eks_role.arn
+  role_arn = var.cluster_role_arn
 
   vpc_config {
-    subnet_ids = var.subnet_ids
+    subnet_ids = module.vpc.public_subnet_ids
   }
 
-  depends_on = [
-    aws_iam_role_policy_attachment.eks_policy_attachment
-  ]
+  depends_on = [module.vpc]
 }
 
-resource "aws_iam_role" "eks_role" {
-  name = "eks_role"
-
-  assume_role_policy = <<EOF
-{
-  "Version": "2012-10-17",
-  "Statement": [
-    {
-      "Effect": "Allow",
-      "Principal": {
-        "Service": "eks.amazonaws.com"
-      },
-      "Action": "sts:AssumeRole"
-    }
-  ]
-}
-EOF
-}
-
-resource "aws_iam_role_policy_attachment" "eks_policy_attachment" {
-  policy_arn = "arn:aws:iam::aws:policy/AmazonEKSClusterPolicy"
-  role       = aws_iam_role.eks_role.name
+output "cluster_id" {
+  value = aws_eks_cluster.this.id
 }
