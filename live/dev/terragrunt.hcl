@@ -1,5 +1,5 @@
 terraform {
-  source = "../modules/eks"
+  source = "${get_parent_terragrunt_dir()}/../../modules/eks"
 }
 
 include {
