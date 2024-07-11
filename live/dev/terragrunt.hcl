@@ -12,5 +12,6 @@ inputs = {
   public_subnet_cidrs = ["10.0.1.0/24", "10.0.2.0/24"]
   availability_zones  = ["us-west-2a", "us-west-2b"]
   cluster_name      = "my-cluster"
-  cluster_role_arn  = "arn:aws:iam::123456789012:role/EKSRole"
+  cluster_role_arn  = "
+
 }

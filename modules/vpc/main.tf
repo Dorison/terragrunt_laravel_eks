@@ -2,21 +2,29 @@ provider "aws" {
   region = var.region
 }
 
-module "vpc" {
-  source = "../vpc"
-  region = var.region
-  cidr_block = var.vpc_cidr_block
-  public_subnet_cidrs = var.public_subnet_cidrs
-  availability_zones  = var.availability_zones
+resource "aws_vpc" "this" {
+  cidr_block = var.cidr_block
+
+  tags = {
+    Name = "my-vpc"
+  }
 }
 
-resource "aws_eks_cluster" "this" {
-  name     = var.cluster_name
-  role_arn = var.cluster_role_arn
+resource "aws_subnet" "public" {
+  count             = length(var.public_subnet_cidrs)
+  vpc_id            = aws_vpc.this.id
+  cidr_block        = var.public_subnet_cidrs[count.index]
+  availability_zone = element(var.availability_zones, count.index)
 
-  vpc_config {
-    subnet_ids = module.vpc.public_subnet_ids
+  tags = {
+    Name = "public-subnet-${count.index}"
   }
+}
 
-  depends_on = [module.vpc]
+output "vpc_id" {
+  value = aws_vpc.this.id
+}
+
+output "public_subnet_ids" {
+  value = aws_subnet.public[*].id
 }
