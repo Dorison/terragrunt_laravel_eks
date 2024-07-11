@@ -20,7 +20,3 @@ resource "aws_eks_cluster" "this" {
 
   depends_on = [module.vpc]
 }
-
-output "cluster_id" {
-  value = aws_eks_cluster.this.id
-}
